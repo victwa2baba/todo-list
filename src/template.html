@@ -3,42 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant Project</title>
+    <title>Todo List</title>
 </head>
 <body>
     <header>
-        <nav class="navbar blur fixed-top">
-            <div class="container">
-                <div class="">
-                    <a class="navbar-brand" href="#">Restaurant</a>
+        <nav class="navbar fixed-top">
+            <div class="container justify-content-end">
+                <div class="justify-content-end">
+                    <div class="d-grid gap-3" style="grid-auto-flow: column; align-items: center;">
+                        <a href="#" id="theme-toggle" class="fs-4" aria-label="Toggle dark mode"><i class="bi bi-moon-fill"></i></a>
+                        <button class="btn btn-primary">Add New Project</button><button class="btn btn-light border">Add Todo</button>
+                    </div>
                 </div>
-                
-                 <div class="d-flex flex-row" id="navbarNav">
-                        <ul class="navbar-nav ms-auto">
-                            <li class="nav-item border border-start-0 border-success px-4 active">
-                                <a class="nav-link" id="home" aria-current="page" >Home</a>
-                            </li>
-                            <li class="nav-item px-4">
-                                <a class="nav-link" id="menu" >Menu</a>
-                            </li>
-                            <li class="nav-item px-4">
-                                <a class="nav-link" id="contact" href="#">Contact</a>
-                            </li>
-                        </ul>
-                 </div>
-
-                <div class="navbar-nav d-flex flex-row align-items-center">
-                    <div class="navbar-nav"><button class="btn border border-success text-success">Reservations</button></div>
-                </div>
-                
             </div>
         </nav>
-
-        
     </header>
     <main>
         <div id="content">
-        </div>
+          <div class="grid-container px-3">
+            <aside class="d-flex flex-column p-3 bg-light border-end" style="width: 250px; position: fixed; top: 56px; left: 0; bottom: 50px; overflow-y: auto;">
+            <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-decoration-none pb-3">
+              <span class="fs-4">Todo</span>
+            </a>
+            
+            <ul class="nav nav-pills flex-column mb-auto">
+              <li class="nav-item">
+                <a href="#" class="nav-link text-dark active" aria-current="page">
+                  <i class="bi bi-speedometer2 me-2"></i>
+                  All Tasks
+                </a>
+              </li>
+              <li>
+                  <a href="#" class="nav-link text-dark text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-journal-code me-2"></i>
+                    Projects
+                  </a>
+                  <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser1">
+                    <li><a class="dropdown-item" href="#">first</a></li>
+                    <li><a class="dropdown-item" href="#">Second</a></li>
+                    <li><a class="dropdown-item" href="#">Third</a></li>
+                  </ul>
+              </li>
+              <li>
+                <a href="#" class="nav-link text-dark">
+                  <i class="bi bi-gear me-2"></i>
+                  Settings
+                </a>
+              </li>
+              <li>
+                <a href="#" class="nav-link text-dark">
+                  <i class="bi bi-people me-2"></i>
+                  Users
+                </a>
+              </li>
+              <li>
+                <a href="#" class="nav-link text-dark">
+                  <i class="bi bi-box-arrow-right me-2"></i>
+                  Logout
+                </a>
+              </li>
+            </ul>
+            </aside>
+            <div class="d-grid" style="overflow-y: auto;">
+                <h5><i class="bi bi-house-door"></i> All Todos</h5>
+
+                <div class="projectJs" style="overflow-y: auto;">
+                    <!-- <input type="radio" name="todo" id="todo">
+                    <p>Todo 1</p>
+                    <p><i class="bi bi-calendar-event-fill"></i> 31-05-2025</p> -->
+                      </div> 
+                <div class="project projectJs d-grid gap-3 high container mt-3" style="grid-template-columns: 20px 1fr 1fr 100px ;">
+                    <!-- <input type="radio" name="todo" id="todo">
+                    <p>Todo 2</p>
+                    <p><i class="bi bi-calendar-event-fill"></i> 31-05-2025</p> -->
+                   </div>
+            </div>
+          </div>
+
+                     
     </main>
      
     
@@ -46,7 +88,7 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="col text-center text-light">
-                        <p>© 2025 Coral Cove. All rights reserved.</p>
+                        <p>© 2025 Victor T. All rights reserved.</p>
                     </div>
                 </div>
             </div>
