@@ -2,6 +2,10 @@ import "./style.css";
 import './scss/styles.scss';
 import * as bootstrap from 'bootstrap';
 import { format, compareAsc, parseISO, isValid, formatDistanceToNow } from "date-fns";
+import image from "./img/ripples.svg";
+
+const imageProloader = document.createElement('img');
+imageProloader.src = image;
 
 // Format the date in a readable format for display
 function formatDate(dateString) {
@@ -26,6 +30,48 @@ function sortByDate(todos) {
     return todos.sort((a, b) => compareAsc(parseISO(a.dueDate), parseISO(b.dueDate)));
 }
 
+// preloader
+function preloader() {
+    // Create preloader element
+    const preloaderDiv = document.createElement('div');
+    preloaderDiv.className = 'preloader';
+    
+    // Add loading spinner image
+    const loadingImg = document.createElement('img');
+    loadingImg.src = image;
+    loadingImg.alt = 'Loading...';
+    
+    // Append elements
+    preloaderDiv.appendChild(loadingImg);
+    content.appendChild(preloaderDiv);
+    
+    return preloaderDiv;
+}
+
+// view form preloader
+function viewFormPreloader() {
+    const preloaderDiv = preloader();
+    setTimeout(() => {
+        preloaderDiv.classList.add('fade-out');
+        setTimeout(() => {
+            preloaderDiv.remove();
+            viewTodoForm();
+        }, 300); // Wait for fade animation to complete
+    }, 1000);
+}
+
+// alltask preloader
+function alltaskPreloader () {
+  const preloaderDiv = preloader();
+    setTimeout(() => {
+        preloaderDiv.classList.add('fade-out');
+        setTimeout(() => {
+            preloaderDiv.remove();
+            viewAllTasks();
+        }, 300); // Wait for fade animation to complete
+    }, 1000);
+}
+
 if (process.env.NODE_ENV !== 'production') {
    console.log('Looks like we are in development mode!');
 }
@@ -35,9 +81,6 @@ const toggleButton = document.getElementById('theme-toggle');
 const body = document.body;
 const content = document.querySelector('#content');
 const linkSelector = content.querySelectorAll('a');
-/* Removed these two lines to select dynamically inside displayProjects */
-// const gridTemp = document.querySelector('.grid-container');
-// const displayParent = document.querySelector('.projectJsParent');
 const addTodoButton = document.querySelector('.addTodoButton');
 const projectArray = [];
 
@@ -135,7 +178,6 @@ function sideBar () {
   asideLi1.appendChild(asideA1);
   asideUl.appendChild(asideLi2);
   asideLi2.appendChild(asideP);
-
 }
 
 // display all todo
@@ -256,38 +298,217 @@ function displayProjects() {
 
       // Edit button event listener
       collapseDiv.querySelector('.edit-btn').addEventListener('click', () => {
-        // Simple prompt-based edit for demo purposes
-        collapseDiv.classList.toggle('d-grid');
-        const newTitle = prompt('Edit Title:', todo.title);
-        if (newTitle !== null && newTitle.trim() !== '') {
-          todo.title = newTitle.trim();
-        }
-        const newDescription = prompt('Edit Description:', todo.description);
-        if (newDescription !== null && newDescription.trim() !== '') {
-          todo.description = newDescription.trim();
-        }
-        const newDueDate = prompt('Edit Due Date:', todo.dueDate);
-        if (newDueDate !== null && newDueDate.trim() !== '') {
-          todo.dueDate = newDueDate.trim();
-        }
-        const newPriority = prompt('Edit Priority (low, medium, high):', todo.priority);
-        if (newPriority !== null && ['low', 'medium', 'high'].includes(newPriority.trim().toLowerCase())) {
-          todo.priority = newPriority.trim().toLowerCase();
-        }
-        const newNotes = prompt('Edit Notes:', todo.notes);
-        if (newNotes !== null && newNotes.trim() !== '') {
-          todo.notes = newNotes.trim();
-        }
-        displayProjects(); // Refresh display after editing
+        editTodo(project);
       });
 
+      // edit function 
+      function editTodo (project) {
+        const displayParent = document.querySelector('.projectJsParent');
+        if (!displayParent) {
+          console.error('projectJsParent element not found');
+          return;
+        }
+
+        // Clear existing content
+        displayParent.innerHTML = '';
+
+        const display = document.createElement('div');
+        display.style.overflowY = 'auto';
+        const header = document.createElement('h5');
+        header.setAttribute('class', 'pt-4 px-3')
+        header.innerHTML = `<i class="bi bi-card-checklist"></i> Edit Todo`;
+        displayParent.appendChild(header);
+
+        const container = document.createElement('div');
+        container.setAttribute('class', 'container pt-4 pb-100');
+        const form = document.createElement('form');
+        form.setAttribute('class', 'addTodoForm');
+        // title
+        const titleWrapper = document.createElement('div');
+        titleWrapper.setAttribute('class', 'mb-3');
+        const titleLabel = document.createElement('label');
+        titleLabel.setAttribute('for', 'title');
+        titleLabel.setAttribute('class', 'form-label');
+        titleLabel.textContent = 'Title';
+        const titleInput = document.createElement('input');
+        titleInput.setAttribute('type', 'text');
+        titleInput.setAttribute('class', 'form-control');
+        titleInput.setAttribute('aria-describedby', 'titleHelp');
+        titleInput.setAttribute('required', '');
+        titleInput.id = 'title';
+        titleInput.value = todo.title;
+        // description
+        const descriptionWrapper = document.createElement('div');
+        descriptionWrapper.setAttribute('class', 'mb-3');
+        const descriptionLabel = document.createElement('label');
+        descriptionLabel.setAttribute('for', 'description');
+        descriptionLabel.setAttribute('class', 'form-label');
+        descriptionLabel.textContent = 'Description';
+        const descriptionInput = document.createElement('input');
+        descriptionInput.setAttribute('type', 'text');
+        descriptionInput.setAttribute('class', 'form-control');
+        descriptionInput.setAttribute('aria-describedby', 'descriptionHelp');
+        descriptionInput.setAttribute('required', '');
+        descriptionInput.id = 'description';
+        descriptionInput.value = todo.description;
+        
+        // date
+        const dateWrapper = document.createElement('div');
+        dateWrapper.setAttribute('class', 'mb-3');
+        const dateLabel = document.createElement('label');
+        dateLabel.setAttribute('for', 'date');
+        dateLabel.setAttribute('class', 'form-label');
+        dateLabel.textContent = 'Date';
+        const dateInput = document.createElement('input');
+        dateInput.setAttribute('type', 'date');
+        dateInput.setAttribute('class', 'form-control');
+        dateInput.setAttribute('aria-describedby', 'dateHelp');
+        dateInput.setAttribute('required', '');
+        dateInput.id = 'date';
+        dateInput.value = todo.dueDate;
+        //priority
+        const priorityWrapper = document.createElement('div');
+        priorityWrapper.setAttribute('class', 'mb-3');
+        const priorityLabel = document.createElement('label');
+        priorityLabel.setAttribute('for', 'priority');
+        priorityLabel.setAttribute('class', 'form-label');
+        priorityLabel.textContent = 'Priority';
+        const prioritySelect = document.createElement('select');
+        prioritySelect.name = 'priority';
+        prioritySelect.id = 'priority';
+        prioritySelect.setAttribute('class', 'form-select');
+        prioritySelect.setAttribute('aria-describedby', 'priHelp');
+        prioritySelect.setAttribute('required', '');
+        const option1 = document.createElement('option');
+        option1.textContent = todo.priority;
+        option1.setAttribute('selected', '');
+        option1.setAttribute('disabled', '');    
+        const option2 = document.createElement('option');
+        const option3 = document.createElement('option');
+        const option4 = document.createElement('option');
+        
+        todo.priority === 'high' ? option2.textContent = 'Medium' : 'Low';
+        todo.priority === 'high' ? option3.textContent = 'Low' : 'Medium';
+        todo.priority === 'high' ? option2.value = 'medium' : 'low';
+        todo.priority === 'high' ? option3.value = 'low' : 'medium';
+        todo.priority === 'medium' ? option2.textContent = 'Low' : 'High';
+        todo.priority === 'medium' ? option3.textContent = 'High' : 'Low';
+        todo.priority === 'medium' ? option2.value = 'low' : 'high';
+        todo.priority === 'medium' ? option3.value = 'high' : 'low';
+        todo.priority === 'low' ? option2.textContent = 'High' : 'Medium';
+        todo.priority === 'low' ? option3.textContent = 'Medium' : 'High';
+        todo.priority === 'low' ? option2.value = 'high' : 'medium';
+        todo.priority === 'low' ? option3.value = 'medium' : 'high';
+        option4.textContent = todo.priority;
+        option4.value = todo.priority;
+        //project
+        const projectWrapper = document.createElement('div');
+        projectWrapper.setAttribute('class', 'mb-3');
+        const projectLabel = document.createElement('label');
+        projectLabel.setAttribute('for', 'project');
+        projectLabel.setAttribute('class', 'form-label');
+        projectLabel.textContent = 'Project';
+        const projectSelect = document.createElement('select');
+        projectSelect.name = 'project';
+        projectSelect.id = 'project';
+        projectSelect.setAttribute('class', 'form-select');
+        projectSelect.setAttribute('aria-describedby', 'proHelp');
+        projectSelect.setAttribute('required', '');
+        const projectOption1 = document.createElement('option');
+        projectOption1.setAttribute('selected', '');
+        projectOption1.setAttribute('disabled', '');
+        projectOption1.textContent =  project.project;
+        
+
+
+        // notes
+        const notesWrapper = document.createElement('div');
+        notesWrapper.setAttribute('class', 'form-floating mb-3');
+        const notesTextarea = document.createElement('textarea');
+        notesTextarea.setAttribute('class', 'form-control');
+        notesTextarea.placeholder = 'Leave your notes here';
+        notesTextarea.setAttribute('required', '');
+        const notesLabel = document.createElement('label');
+        notesLabel.setAttribute('for', 'notes');
+        notesLabel.setAttribute('class', 'fw-bold');
+        notesLabel.textContent = todo.notes;
+        
+        // button
+        const formSubmitButton = document.createElement('button');
+        formSubmitButton.type = 'submit';
+        formSubmitButton.setAttribute('class', 'btn btn-success');
+        formSubmitButton.textContent = 'Save';
+
+
+        // append all elements
+        displayParent.appendChild(header);
+        displayParent.appendChild(display);
+        display.appendChild(container);
+        container.appendChild(form);
+        // append title
+        form.appendChild(titleWrapper);
+        titleWrapper.appendChild(titleLabel);
+        titleWrapper.appendChild(titleInput);
+        
+        // append description
+        form.appendChild(descriptionWrapper);
+        descriptionWrapper.appendChild(descriptionLabel);
+        descriptionWrapper.appendChild(descriptionInput);
+        
+        // append date
+        form.appendChild(dateWrapper);
+        dateWrapper.appendChild(dateLabel);
+        dateWrapper.appendChild(dateInput);
+        
+        // append priority
+        form.appendChild(priorityWrapper);
+        priorityWrapper.appendChild(priorityLabel);
+        priorityWrapper.appendChild(prioritySelect);
+        prioritySelect.appendChild(option1);
+        prioritySelect.appendChild(option2);
+        prioritySelect.appendChild(option3);
+        prioritySelect.appendChild(option4);
      
+        // append project
+        form.appendChild(projectWrapper);
+        projectWrapper.appendChild(projectLabel);
+        projectWrapper.appendChild(projectSelect);
+        projectSelect.appendChild(projectOption1);
+        // get the existing projects from the array
+        projectArray.forEach(project => {
+          const projectOption = document.createElement('option');
+          projectOption.value = project.project;
+          projectOption.textContent = project.project;
+          projectSelect.appendChild(projectOption);
+        })
+
+       
+        // append notes
+        form.appendChild(notesWrapper);
+        notesWrapper.appendChild(notesTextarea); 
+        notesWrapper.appendChild(notesLabel); 
+        // append button 
+        form.appendChild(formSubmitButton);
+
+        // handle form submission
+        form.addEventListener('submit', (e) => {
+          e.preventDefault();
+          todo.title = titleInput.value;
+          todo.description = descriptionInput.value;
+          todo.dueDate = dateInput.value;
+          todo.priority = prioritySelect.value;
+          project.project = projectSelect.value;
+          todo.notes = notesTextarea.value;
+
+          setTimeout(()=> {
+            viewAllTasks();
+          }, 3000);
+        })
+      }
+        
       todoList.appendChild(todoItem);
       todoItem.appendChild(button);
       todoItem.appendChild(collapseDiv);
-
-     
-
     });
     display.appendChild(todoList);
   });
@@ -514,21 +735,19 @@ form.addEventListener('submit', (e) => {
         displayProjects(); // Refresh display
     }
 });
-
 }
 
 //display view for add todo
 addTodoButton.addEventListener('click', ()=>{
-  viewTodoForm();
+  viewFormPreloader();
 })
 
 // view all tasks with button
 function viewAllTasks () {
- 
   displayProjects();
   const button = document.querySelector('.tasks');
   button.addEventListener('click', () => {
-    displayProjects();
+    alltaskPreloader();
   })
 }
 
