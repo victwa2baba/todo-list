@@ -133,6 +133,13 @@ body.dark-mode .btn-light:hover {
     border-color: #1f1f1f;
 }
 
+body.dark-mode .text-muted, body.dark-mode .form-text{
+    color: var(--btn-dark-color) !important
+}
+
+body.dark-mode .project {
+    box-shadow: 0 0 10px rgb(255 255 255 / 24%);
+}
 
 .grid-container {
     display: grid;
@@ -165,7 +172,7 @@ body.dark-mode .btn-light:hover {
     border-left: 10px solid green;
 }
 .medium {
-    border-left: 10px solid yellow;
+    border-left: 10px solid rgb(253, 216, 3);
 }
 .high {
     border-left: 10px solid red;
