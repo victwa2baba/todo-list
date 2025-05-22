@@ -15,8 +15,9 @@ const toggleButton = document.getElementById('theme-toggle');
 const body = document.body;
 const content = document.querySelector('#content');
 const linkSelector = content.querySelectorAll('a');
-const gridTemp = document.querySelector('.grid-container');
-const displayParent = document.querySelector('.projectJsParent');
+/* Removed these two lines to select dynamically inside displayProjects */
+// const gridTemp = document.querySelector('.grid-container');
+// const displayParent = document.querySelector('.projectJsParent');
 const addTodoButton = document.querySelector('.addTodoButton');
 const projectArray = [];
 
@@ -124,9 +125,12 @@ function displayProjects() {
   // create projectView
   const display = document.createElement('div');
   display.style.overflowY = 'auto';
+  // 
 
+  // Call sideBar once before the loop
+  sideBar();
+  
   projectArray.forEach((project, index) => {
-    
     // Create list group for todos
     const todoList = document.createElement('div');
     todoList.className = 'd-grid';
@@ -220,18 +224,42 @@ function displayProjects() {
      
 
     });
-    // content.appendChild(gridTemp);
-    sideBar();
-    gridTemp.appendChild(display);
+    const gridTemp = document.querySelector('.grid-container');
+    if (!gridTemp) {
+      console.error('grid-container element not found');
+      return;
+    }
+
+    // Create projectJsParent if it doesn't exist
+    let displayParent = document.querySelector('.projectJsParent');
+    if (!displayParent) {
+      displayParent = document.createElement('div');
+      displayParent.className = 'projectJsParent';
+      gridTemp.appendChild(displayParent);
+    }
+
+    displayParent.appendChild(display);
     display.appendChild(todoList);
   });
 }
 
      // create todo View
       const viewTodoForm = () => {
-        display.textContent = '';
+        const displayParent = document.querySelector('.projectJsParent');
+        if (!displayParent) {
+          console.error('projectJsParent element not found');
+          return;
+        }
+        
+        // Clear existing content
+        displayParent.innerHTML = '';
+        
+        const display = document.createElement('div');
+        display.style.overflowY = 'auto';
         const header = document.createElement('h5');
+        header.setAttribute('class', 'pt-4 px-3')
         header.innerHTML = `<i class="bi bi-card-checklist"></i> Create Todo`;
+        displayParent.appendChild(header);
 
         const container = document.createElement('div');
         container.setAttribute('class', 'container pt-4 pb-100');
