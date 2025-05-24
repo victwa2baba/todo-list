@@ -4,8 +4,6 @@ import * as bootstrap from 'bootstrap';
 import { format, compareAsc, parseISO, isValid, formatDistanceToNow } from "date-fns";
 import image from "./img/ripples.svg";
 
-const imageProloader = document.createElement('img');
-imageProloader.src = image;
 
 // Format the date in a readable format for display
 function formatDate(dateString) {
@@ -80,9 +78,42 @@ if (process.env.NODE_ENV !== 'production') {
 const toggleButton = document.getElementById('theme-toggle');
 const body = document.body;
 const content = document.querySelector('#content');
-const linkSelector = content.querySelectorAll('a');
 const addTodoButton = document.querySelector('.addTodoButton');
-const projectArray = [];
+const addProjectButton = document.querySelector('.addProjectButton');
+const projectArray =  [];
+
+
+// save to storage
+function saveToStorage() {
+  localStorage.setItem('projectArray', JSON.stringify(projectArray));
+}
+
+
+
+// load from storage
+function loadFromStorage() {
+  const data = localStorage.getItem('projectArray');
+  if (data) {
+    const parsed = JSON.parse(data);
+    projectArray.length = 0; // Clear current array
+    parsed.forEach(projData => {
+      const project = new Project(projData.project);
+      projData.todos.forEach(todoData => {
+        const todo = new Todo(
+          todoData.title,
+          todoData.description,
+          todoData.dueDate,
+          todoData.priority,
+          todoData.notes
+        );
+        project.addTodo(todo);
+      });
+      projectArray.push(project);
+    });
+  }
+}
+
+
 
 //project object
 class Project {
@@ -107,6 +138,7 @@ class Todo {
   } 
   saveTodo(project) {
     project.addTodo(this);
+     
   }
 }
 
@@ -122,19 +154,6 @@ function createProject(name) {
   return newProject;
 }
 
-// example usage
-const vic = createProject('victor');
-const yes = new Todo('Esther', 'my wife', '2025-12-06', 'high', 'its her birthday');
-const no = new Todo('Ett', 'tt', '2025-12-06', 'medium', 'its her birthday');
-yes.saveTodo(vic);
-no.saveTodo(vic);
-
-const name = createProject('name');
-const nam = new Todo('Eii', 'mfe', '2025-12-06', 'low', 'itsrthday');
-nam.saveTodo(name);
-console.log(projectArray);
-
-console.log(vic);
 
 // display sidebar
 function sideBar () {
@@ -178,16 +197,56 @@ function sideBar () {
   asideLi1.appendChild(asideA1);
   asideUl.appendChild(asideLi2);
   asideLi2.appendChild(asideP);
+
+
+  projectArray.forEach(proj =>{
+     const projectLi = document.createElement('li');
+     projectLi.setAttribute('class', 'nav-link');
+     const projectP = document.createElement('a');
+     projectP.setAttribute('class', 'nav-link text-dark');
+     projectP.href = `${proj.project}`;
+     projectP.innerHTML = `<i class="bi bi-archive me-2"></i> ${proj.project}`;
+     asideUl.appendChild(projectLi);
+     projectLi.appendChild(projectP);
+
+
+     projectP.addEventListener('click', (e) => {
+      e.preventDefault();
+      displayProjectChildren();
+     })
+  });
+  // Add active class toggle logic here after links are created
+  const linkSelector = content.querySelectorAll('a');
+  linkSelector.forEach((li) => {
+    li.addEventListener('click', () => {
+      linkSelector.forEach(l => l.classList.remove('active'));
+      li.classList.add('active');
+    });
+  });
 }
 
+// display project childrens
+const displayProjectChildren = () => {}
+
+console.log(projectArray)
 // display all todo
 function displayProjects() {
-  content.innerHTML = ''; 
+  if (projectArray.length === 0) {
+    const gridContainer = document.createElement('div');
+    gridContainer.setAttribute('class', 'grid-container');
+    const container = document.createElement('div');
+    container.setAttribute('class', 'projectJsParent')
+    container.innerText = 'Please start by adding a project. 😗';
+    content.appendChild(gridContainer);
+    gridContainer.appendChild(container);
+    console.log('nothing');
+  } else {
+     content.innerHTML = ''; 
   // create projectView
   const display = document.createElement('div');
   display.style.overflowY = 'auto';
   const header = document.createElement('h5');
-  header.setAttribute('class', 'pt-4 px-3');
+  header.setAttribute('class', 'pt-4');
   header.innerHTML = `<i class="bi bi-list-task"></i> All Todo`;
 
   // Call sideBar once before the loop
@@ -204,6 +263,7 @@ function displayProjects() {
   if (!displayParent) {
     displayParent = document.createElement('div');
     displayParent.className = 'projectJsParent';
+    displayParent.style.paddingBottom = '100px';
     gridTemp.appendChild(displayParent);
   }
 
@@ -216,6 +276,8 @@ function displayProjects() {
     todoList.className = 'd-grid';
 
     project.todos.forEach((todo, id) => {
+      const todoContainer = document.createElement('div');
+      todoContainer.setAttribute('class', 'd-grid');
       const todoItem = document.createElement('div');
       todoItem.className = 'project d-grid gap-3 container my-3';
       todoItem.style.gridTemplateColumns = '1fr 1fr 100px'
@@ -254,7 +316,8 @@ function displayProjects() {
 
       // Populate collapseDiv with todo details and add Edit and Delete buttons
       collapseDiv.innerHTML = `
-        <div class="d-grid gap-2" style="grid-column: span 3;">
+      <div class="d-grid">
+        <div class="d-grid gap-2 mb-50" style="grid-column: span 3;">
           <p><strong>Description:</strong> ${todo.description}</p>
           <p><strong>Notes:</strong> ${todo.notes}</p>
           <p><strong>Priority:</strong> ${todo.priority}</p>
@@ -262,7 +325,9 @@ function displayProjects() {
             <button class="btn btn-sm btn-warning edit-btn">Edit</button>
             <button class="btn btn-sm btn-danger delete-btn">Delete</button>
           </div>
-        </div>`;
+        </div>
+      </div>
+        `;
 
       // Delete button event listener
       collapseDiv.querySelector('.delete-btn').addEventListener('click', () => {
@@ -289,7 +354,8 @@ function displayProjects() {
         const noButton = document.querySelector('.no');
         yesButton.addEventListener('click', () => {
            project.todos.splice(id, 1); // Remove todo from project
-          displayProjects(); // Refresh display
+          saveToStorage();
+           displayProjects(); // Refresh display
         })
         noButton.addEventListener('click', () => {
           displayProjects(); // Refresh display
@@ -315,7 +381,7 @@ function displayProjects() {
         const display = document.createElement('div');
         display.style.overflowY = 'auto';
         const header = document.createElement('h5');
-        header.setAttribute('class', 'pt-4 px-3')
+        header.setAttribute('class', 'pt-4')
         header.innerHTML = `<i class="bi bi-card-checklist"></i> Edit Todo`;
         displayParent.appendChild(header);
 
@@ -387,16 +453,16 @@ function displayProjects() {
         const option3 = document.createElement('option');
         const option4 = document.createElement('option');
         
-        todo.priority === 'high' ? option2.textContent = 'Medium' : 'Low';
-        todo.priority === 'high' ? option3.textContent = 'Low' : 'Medium';
+        todo.priority === 'high' ? option2.textContent = 'medium' : 'low';
+        todo.priority === 'high' ? option3.textContent = 'low' : 'medium';
         todo.priority === 'high' ? option2.value = 'medium' : 'low';
         todo.priority === 'high' ? option3.value = 'low' : 'medium';
-        todo.priority === 'medium' ? option2.textContent = 'Low' : 'High';
-        todo.priority === 'medium' ? option3.textContent = 'High' : 'Low';
+        todo.priority === 'medium' ? option2.textContent = 'low' : 'high';
+        todo.priority === 'medium' ? option3.textContent = 'high' : 'low';
         todo.priority === 'medium' ? option2.value = 'low' : 'high';
         todo.priority === 'medium' ? option3.value = 'high' : 'low';
-        todo.priority === 'low' ? option2.textContent = 'High' : 'Medium';
-        todo.priority === 'low' ? option3.textContent = 'Medium' : 'High';
+        todo.priority === 'low' ? option2.textContent = 'high' : 'medium';
+        todo.priority === 'low' ? option3.textContent = 'medium' : 'high';
         todo.priority === 'low' ? option2.value = 'high' : 'medium';
         todo.priority === 'low' ? option3.value = 'medium' : 'high';
         option4.textContent = todo.priority;
@@ -503,16 +569,174 @@ function displayProjects() {
           setTimeout(()=> {
             viewAllTasks();
           }, 3000);
+          saveToStorage();
         })
       }
         
-      todoList.appendChild(todoItem);
+      todoList.appendChild(todoContainer);
+      todoContainer.appendChild(todoItem);
       todoItem.appendChild(button);
-      todoItem.appendChild(collapseDiv);
+      todoContainer.appendChild(collapseDiv);
     });
     display.appendChild(todoList);
   });
+  }
+ 
 }
+
+// create project form view
+function newProjectForm () {
+  const projectContainer = document.createElement('div');
+  projectContainer.id = 'newProjectModal';
+  projectContainer.setAttribute('class', 'modal fade');
+  projectContainer.setAttribute('aria-labelledby', 'newProjectModal');
+  const modalDialog = document.createElement('div');
+  modalDialog.setAttribute('class', 'modal-dialog modal-dialog-centered');
+  const modalContent = document.createElement('div');
+  modalContent.setAttribute('class', 'modal-content');
+  
+  // Modal Header
+  const modalHeader = document.createElement('div');
+  modalHeader.setAttribute('class', 'modal-header');
+  const modalH1 = document.createElement('h1');
+  modalH1.setAttribute('class', 'modal-title fs-5');
+  modalH1.id = 'newProjectModalLabel';
+  modalH1.textContent = 'Create New Project';
+  const closeBtnTop = document.createElement('button');
+  closeBtnTop.type = 'button';
+  closeBtnTop.setAttribute('class', 'btn-close');
+  closeBtnTop.setAttribute('data-bs-dismiss', 'modal');
+  closeBtnTop.setAttribute('aria-label', 'close');
+  
+  // Modal Body
+  const modalBody = document.createElement('div');
+  modalBody.setAttribute('class', 'modal-body');
+  const form = document.createElement('form');
+  form.id = 'newProjectForm';
+  
+  // Form Group
+  const formGroup = document.createElement('div');
+  formGroup.setAttribute('class', 'mb-3');
+  const formLabel = document.createElement('label');
+  formLabel.setAttribute('for', 'projectTitle');
+  formLabel.setAttribute('class', 'form-label');
+  formLabel.textContent = 'Project Title';
+  const formInput = document.createElement('input');
+  formInput.setAttribute('class', 'form-control');
+  formInput.type = 'text';
+  formInput.id = 'projectTitle';
+  formInput.name = 'title';
+  formInput.setAttribute('required', '');
+  formInput.setAttribute('aria-describedby', 'titleHelp');
+  const formTitleHelp = document.createElement('div');
+  formTitleHelp.setAttribute('class', 'form-text');
+  formTitleHelp.id = 'titleHelp';
+  formTitleHelp.textContent = 'Let\'s give this project a name 😎';
+  
+  // Modal Footer
+  const modalFooter = document.createElement('div');
+  modalFooter.setAttribute('class', 'modal-footer');
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.setAttribute('class', 'btn btn-secondary');
+  closeBtn.setAttribute('data-bs-dismiss', 'modal');
+  closeBtn.textContent = 'Close';
+  const submitBtn = document.createElement('button');
+  submitBtn.type = 'submit';
+  submitBtn.setAttribute('class', 'btn btn-primary');
+  submitBtn.textContent = 'Create Project';
+  
+  // Append elements
+  content.appendChild(projectContainer);
+  projectContainer.appendChild(modalDialog);
+  modalDialog.appendChild(modalContent);
+  
+  // Append header
+  modalContent.appendChild(modalHeader);
+  modalHeader.appendChild(modalH1);
+  modalHeader.appendChild(closeBtnTop);
+  
+  // Append body
+  modalContent.appendChild(modalBody);
+  modalBody.appendChild(form);
+  form.appendChild(formGroup);
+  formGroup.appendChild(formLabel);
+  formGroup.appendChild(formInput);
+  formGroup.appendChild(formTitleHelp);
+  
+  // Move submit button to form
+  form.appendChild(submitBtn);
+  
+  // Form submission handler
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const projectTitle = formInput.value.trim();
+    
+    if (projectTitle) {
+      // Check if project already exists
+      if (findProjectByName(projectTitle)) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'alert alert-danger mt-2';
+        errorDiv.textContent = 'A project with this name already exists!';
+        formGroup.appendChild(errorDiv);
+        setTimeout(() => errorDiv.remove(), 3000);
+        return;
+      }
+
+      // Create new project
+      createProject(projectTitle);
+      
+      // Close modal using Bootstrap Modal instance
+      const modal = bootstrap.Modal.getInstance(projectContainer);
+      if (modal) {
+        modal.hide();
+      }
+      
+      // Show success message
+      const successAlert = document.createElement('div');
+      successAlert.className = 'alert alert-success alert-dismissible fade show position-fixed top-8 start-50 translate-middle-x mt-3';
+      successAlert.setAttribute('role', 'alert');
+      successAlert.innerHTML = `<div class='container'>
+        <p>Project "${projectTitle}" created successfully!</p>
+        <button type="button" class="btn-close btn " data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      document.body.appendChild(successAlert);
+      setTimeout(() => successAlert.remove(), 10000);
+      
+      // Reset form
+      form.reset();
+      
+      // Refresh display
+      displayProjects();
+    }
+    saveToStorage();
+  });
+
+  // Append modal to DOM
+  document.body.appendChild(projectContainer);
+  
+  // Initialize Bootstrap modal
+  return new bootstrap.Modal(projectContainer);
+}
+
+// project form preloader
+function projectFormPreloader() {
+  const preloaderDiv = preloader();
+  setTimeout(() => {
+      preloaderDiv.classList.add('fade-out');
+      setTimeout(() => {
+          preloaderDiv.remove();
+          const modal = newProjectForm();
+          modal.show();
+      }, 300); // Wait for fade animation to complete
+  }, 1000);
+}
+
+// launch create project form
+addProjectButton.addEventListener('click', ()=> {
+  projectFormPreloader();
+});
 
 // create todo View
 const viewTodoForm = () => {
@@ -528,7 +752,7 @@ displayParent.innerHTML = '';
 const display = document.createElement('div');
 display.style.overflowY = 'auto';
 const header = document.createElement('h5');
-header.setAttribute('class', 'pt-4 px-3')
+header.setAttribute('class', 'pt-4')
 header.innerHTML = `<i class="bi bi-card-checklist"></i> Create Todo`;
 displayParent.appendChild(header);
 
@@ -733,6 +957,7 @@ form.addEventListener('submit', (e) => {
     if (targetProject) {
         newTodo.saveTodo(targetProject);
         displayProjects(); // Refresh display
+        saveToStorage();
     }
 });
 }
@@ -744,11 +969,17 @@ addTodoButton.addEventListener('click', ()=>{
 
 // view all tasks with button
 function viewAllTasks () {
+  loadFromStorage();
   displayProjects();
-  const button = document.querySelector('.tasks');
-  button.addEventListener('click', () => {
-    alltaskPreloader();
-  })
+  
+  if (projectArray.length === 0) {
+    return
+  } else {
+      const button = document.querySelector('.tasks');
+      button.addEventListener('click', () => {
+      alltaskPreloader();
+})
+  }
 }
 
 // set theme
@@ -785,13 +1016,7 @@ if (savedTheme) {
   setTheme(prefersDark ? 'dark' : 'light');
 }
 
-// add active to sidebar
-linkSelector.forEach((li) =>{
-  li.addEventListener('click', ()=> {
-    linkSelector.forEach(l => l.classList.remove('active'));
-    li.classList.add('active');
-  })
-})
+
 
 // show all task, this is the landing page
 viewAllTasks();
