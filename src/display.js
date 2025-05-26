@@ -1,3 +1,4 @@
+import { id } from 'date-fns/locale';
 import { content, projectArray, saveToStorage, viewAllTasks, formatDate, getRelativeTime, alltaskPreloader} from './index.js';
 
 // sideBar function to create the sidebar
@@ -452,9 +453,45 @@ function displayProjectChildren(proj) {
 
   // Project header
   const header = document.createElement('h5');
-  header.setAttribute('class', 'pt-4');
-  header.innerHTML = `<i class="bi bi-list-task"></i> ${proj.project} Todos`;
+   header.setAttribute('class', 'd-grid pt-4');
+  header.style.gridTemplateColumns = '1fr 1fr';
+  header.innerHTML = `<div><i class="bi bi-list-task"></i> ${proj.project} Todos</div> 
+  <div class="d-flex justify-content-end">
+    <button class="btn btn-danger deleteProject">
+      <i class="bi bi-file-earmark-x"></i>
+      </div>`;
   parentJs.appendChild(header);
+
+  // delete a project
+  const deleteBtn = header.querySelector('.deleteProject');
+  const projectIndex = projectArray.findIndex(p => p.project === proj.project);
+  if (projectIndex > -1 && projectIndex < 3) {
+    deleteBtn.setAttribute('disabled', '');
+  } else {
+    deleteBtn.removeAttribute('disabled');
+    deleteBtn.addEventListener('click', () => {
+      const alert = document.createElement('div');
+      alert.className = 'alert alert-danger alert-dismissible mt-3 fade show';
+      alert.innerHTML = `
+        <div class="container">
+        <p class="py-3"> Are you sure you want to delete this project?</p>
+        <button class="btn btn-danger yes me-2">Yes</button> 
+        <button class="btn btn-success no me-2">No</button> </div>
+      `;
+      parentJs.innerHTML = '';
+      parentJs.appendChild(alert);
+
+      // Confirm delete
+      alert.querySelector('.yes').addEventListener('click', () => {
+        projectArray.splice(projectIndex, 1);
+        saveToStorage();
+        displayProjects();
+      });
+      alert.querySelector('.no').addEventListener('click', () => {
+        displayProjectChildren(proj);
+      });
+    });
+  }
 
   // Todos list
   const todoList = document.createElement('div');
@@ -549,6 +586,7 @@ function displayProjectChildren(proj) {
     collapseDiv.querySelector('.edit-btn').addEventListener('click', () => {
       editTodo(proj);
     });
+
     function editTodo (project) {
         const displayParent = document.querySelector('.projectJsParent');
         if (!displayParent) {

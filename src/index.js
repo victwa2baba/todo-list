@@ -82,9 +82,7 @@ const body = document.body;
 export const content = document.querySelector('#content');
 const addTodoButton = document.querySelector('.addTodoButton');
 const addProjectButton = document.querySelector('.addProjectButton');
-export const projectArray =  [];
-
-
+export let projectArray =  [];
 
 // save to storage
 export function saveToStorage() {
@@ -113,10 +111,47 @@ export function loadFromStorage() {
       });
       projectArray.push(project);
     });
+  } else if (!data && projectArray.length === 0) {
+    projectArray = [
+    {
+        "project": "My life",
+        "todos": [
+          {
+                "title": "Esther's Birthday",
+                "description": "This is my wife's birthday",
+                "dueDate": "2025-06-12",
+                "priority": "high",
+                "notes": "we gonna celebrate it in style😉"
+            }
+        ]
+    },
+    {
+        "project": "Test",
+        "todos": [
+            {
+                "title": "Run tests on the singularity app",
+                "description": "Check if the app is working as expected",
+                "dueDate": "2025-07-08",
+                "priority": "low",
+                "notes": "This is a test todo"
+            }
+        ]
+    },
+    {
+        "project": "Work",
+        "todos": [
+            {
+                "title": "Listen to the new song",
+                "description": "Listen to the new song by the Mercy Chinwo",
+                "dueDate": "2025-08-08",
+                "priority": "low",
+                "notes": "This is a work todo"
+            }
+        ]
+    }
+]
   }
 }
-
-
 
 //project object
 class Project {
@@ -146,7 +181,6 @@ class Todo {
 }
 
 
-
 // helper function to find project by name
 function findProjectByName(name) {
   return projectArray.find(proj => proj.project === name);
@@ -158,9 +192,6 @@ function createProject(name) {
   projectArray.push(newProject);
   return newProject;
 }
-
-const estelle = createProject('My life');
-
 
 
 // create project form view
@@ -589,8 +620,6 @@ if (savedTheme) {
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
   setTheme(prefersDark ? 'dark' : 'light');
 }
-
-
 
 // show all task, this is the landing page
 viewAllTasks();
