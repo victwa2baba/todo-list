@@ -101,8 +101,8 @@ body.dark-mode .nav-pills .nav-link.active {
 }
 
 
-.nav-pills .nav-item.active, .nav-pills .show > .nav-link {
-    color: var(--bs-nav-pills-link-active-color);
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+        color: white !important;
     background-color: var(--bs-nav-pills-link-active-bg);
 }
 
